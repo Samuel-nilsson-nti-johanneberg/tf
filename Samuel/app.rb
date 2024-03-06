@@ -4,7 +4,9 @@ require 'sinatra/reloader'
 require 'sqlite3'
 require 'bcrypt'
 
-
+  # id = nil
+  enable :sessions
+  session[id] = 0
 
   get('/')  do
     slim(:start)
@@ -19,7 +21,16 @@ require 'bcrypt'
   end
 
   get('/wallet') do
-    slim(:"/users/wallet")
+    if session[id] != nil
+      slim(:"/users/wallet")
+    else
+      slim(:"/users/login")
+    end
+    # slim(:"/users/wallet")
+  end
+
+  get('wallet/add') do
+    slim(:"/users/addfunds")
   end
 
   get('/blackjack') do

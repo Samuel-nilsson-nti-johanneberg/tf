@@ -1,5 +1,20 @@
 h2 Wallet 
 p YOu have no money im sowry 
-p bUT if yUo feEl lucKy pReSs hErE
+p Press here to add money 
 
-a href="/blackjack" BlaCkjAcK
+a href="/wallet/add" Add funds
+
+/ - if session[:id] != nil 
+/     - p YOu have no money im sowry 
+/     - p Press here to add money 
+
+    / - a href="/wallet/add" Add funds
+
+/ - else
+    / - p You need to login to see this page 
+    / - a  href="/login" Login
+
+
+/ p bUT if yUo feEl lucKy pReSs hErE
+
+/ a href="/blackjack" BlaCkjAcK
