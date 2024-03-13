@@ -4,9 +4,9 @@ require 'sinatra/reloader'
 require 'sqlite3'
 require 'bcrypt'
 
-  # id = nil
+
   enable :sessions
-  session[id] = 0
+  id = nil
 
   get('/')  do
     slim(:start)
@@ -43,11 +43,11 @@ require 'bcrypt'
     password = params[:password]
     db = SQLite3::Database.new("db/musicsite.db")
     db.results_as_hash = true
-    result = db.execute("SELECT * FROM users WHERE username = ?",username).first
-    pwdigest = result["pwdigest"]
+    result = db.execute("SELECT * FROM users WHERE username = ?",Username).first
+    pwdigest = result["Pwdigest"]
     id = result["id"]
     
-    if BCrypt::Password.new(pwdigest) == password
+    if BCrypt::Password.new(Pwdigest) == password
       session[:id] = id
       redirect('/albums')
     else
@@ -68,11 +68,14 @@ require 'bcrypt'
     username = params[:username]
     password = params[:password]
     password_confirm = params[:password_confirm]
+    firstname = params[:firstname]
+    lastname = params[:lastname]
+    email = params[:email]
   
     if (password == password_confirm)
       password_digest = BCrypt::Password.create(password)
       db = SQLite3::Database.new("db/musicsite.db")
-      db.execute("INSERT INTO users (username, pwdigest) VALUES (?,?)",username,password_digest)
+      db.execute("INSERT INTO users (Username, Pwdigest, Firstname, Lastname, Email) VALUES (?,?,?,?,?)",username,password_digest,firstname,lastname,email)
       redirect('/')
     else
       "Lösenorden matchar inte!"
