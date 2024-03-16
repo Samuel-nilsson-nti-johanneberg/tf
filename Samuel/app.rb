@@ -43,12 +43,14 @@ require 'bcrypt'
     password = params[:password]
     db = SQLite3::Database.new("db/musicsite.db")
     db.results_as_hash = true
-    result = db.execute("SELECT * FROM users WHERE username = ?",Username).first
+    result = db.execute("SELECT * FROM users WHERE username = ?",username).first
     pwdigest = result["Pwdigest"]
     id = result["id"]
     
-    if BCrypt::Password.new(Pwdigest) == password
+    if BCrypt::Password.new(pwdigest) == password
       session[:id] = id
+      p session[:id]
+      p "hej"
       redirect('/albums')
     else
       "Fel lösenord!"
