@@ -6,7 +6,7 @@ require 'bcrypt'
 
 
   enable :sessions
-  id = nil
+  
 
   get('/')  do
     slim(:start)
@@ -20,18 +20,7 @@ require 'bcrypt'
     slim(:"/users/login")
   end
 
-  get('/wallet') do
-    if session[id] != nil
-      slim(:"/users/wallet")
-    else
-      slim(:"/users/login")
-    end
-    # slim(:"/users/wallet")
-  end
-
-  get('wallet/add') do
-    slim(:"/users/addfunds")
-  end
+  
 
   get('/blackjack') do
     slim(:"/blackjack/blackjack")
@@ -45,17 +34,52 @@ require 'bcrypt'
     db.results_as_hash = true
     result = db.execute("SELECT * FROM users WHERE username = ?",username).first
     pwdigest = result["Pwdigest"]
-    id = result["id"]
+    id = result["Userid"]
     
     if BCrypt::Password.new(pwdigest) == password
       session[:id] = id
-      p session[:id]
-      p "hej"
+      session[:result] = result
       redirect('/albums')
     else
       "Fel lösenord!"
     end
   end
+
+  get('/wallet') do
+    if session[:id] != nil
+      slim(:"/users/wallet")
+    else
+      slim(:"/users/login")
+    end
+    
+  end
+
+
+
+  post('/wallet/add100') do
+    session[:result]["Wallet"] += 100
+
+    wallet = session[:result]["Wallet"]
+    p wallet
+    userid = session[:result]["Userid"]
+    p userid
+    db = SQLite3::Database.new("db/musicsite.db")
+    db.execute("UPDATE users SET Wallet = ? WHERE Userid = ?",wallet,userid)
+  
+
+    redirect('/wallet')
+  end
+
+  post('/wallet/add500') do
+    session[:result]["Wallet"] += 500
+    redirect('/wallet')
+  end
+
+  post('/wallet/add1000') do
+    session[:result]["Wallet"] += 1000
+    redirect('/wallet')
+  end
+
   
   # get('/todos') do
   #   id = session[:id].to_i

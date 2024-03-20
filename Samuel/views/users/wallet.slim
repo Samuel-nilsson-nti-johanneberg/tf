@@ -2,7 +2,20 @@ h2 Wallet
 p YOu have no money im sowry 
 p Press here to add money 
 
+p You have #{session[:result]["Wallet"]} sek
+
 a href="/wallet/add" Add funds
+
+form action="wallet/add100" method="POST"
+    input type="submit" value="add100"
+
+form action="wallet/add500" method="POST"
+    input type="submit" value="add500"
+
+form action="wallet/add1000" method="POST"
+    input type="submit" value="add1000"
+
+    
 
 / - if session[:id] != nil 
 /     - p YOu have no money im sowry 
