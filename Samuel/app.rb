@@ -60,11 +60,9 @@ require 'bcrypt'
     session[:result]["Wallet"] += 100
 
     wallet = session[:result]["Wallet"]
-    p wallet
     userid = session[:result]["Userid"]
-    p userid
     db = SQLite3::Database.new("db/musicsite.db")
-    
+
     # db.execute("UPDATE users SET Wallet = ? WHERE Userid = ?",wallet,userid)
     db.execute("UPDATE users SET Wallet = #{wallet} WHERE Userid = #{userid}")
   
@@ -111,14 +109,28 @@ require 'bcrypt'
   end
 
 
+  get('/store') do
+    db = SQLite3::Database.new("db/musicsite.db")
+    db.results_as_hash = true
+    result = db.execute("SELECT * FROM albums")
+    slim(:"albums/store",locals:{albums:result})
 
+  end
+
+  post('/store/:id/buy') do
+    id = params[:id].to_i
+    db = SQLite3::Database.new("db/musicsite.db")
+    wallet = session[:result]["Wallet"]
+    
+    # db.execute("DELETE FROM albums WHERE AlbumId = ?",id)
+    redirect('/albums')
+  end
 
   
   get('/albums') do
     db = SQLite3::Database.new("db/musicsite.db")
     db.results_as_hash = true
     result = db.execute("SELECT * FROM albums")
-    p result
     slim(:"albums/index",locals:{albums:result})
   end
   
