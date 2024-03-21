@@ -64,7 +64,9 @@ require 'bcrypt'
     userid = session[:result]["Userid"]
     p userid
     db = SQLite3::Database.new("db/musicsite.db")
-    db.execute("UPDATE users SET Wallet = ? WHERE Userid = ?",wallet,userid)
+    
+    # db.execute("UPDATE users SET Wallet = ? WHERE Userid = ?",wallet,userid)
+    db.execute("UPDATE users SET Wallet = #{wallet} WHERE Userid = #{userid}")
   
 
     redirect('/wallet')
