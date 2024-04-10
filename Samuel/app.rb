@@ -117,15 +117,26 @@ require 'bcrypt'
 
   end
 
-  post('/store/:id/buy') do
-    id = params[:id].to_i
-    db = SQLite3::Database.new("db/musicsite.db")
-    wallet = session[:result]["Wallet"]
+  # post('/store/:id/buy') do
+  #   id = params[:id].to_i
+  #   db = SQLite3::Database.new("db/musicsite.db")
+  #   wallet = session[:result]["Wallet"]
     
-    # db.execute("DELETE FROM albums WHERE AlbumId = ?",id)
-    redirect('/albums')
+  #   # db.execute("DELETE FROM albums WHERE AlbumId = ?",id)
+  #   redirect('/albums')
+  # end
+
+  get('/response1') do
+    slim(:"albums/response1")
   end
 
+  get('/response2') do
+    slim(:"albums/response2")
+  end
+
+  get('/response3') do
+    slim(:"albums/response3")
+  end
   
   get('/albums') do
     db = SQLite3::Database.new("db/musicsite.db")
@@ -147,11 +158,47 @@ require 'bcrypt'
     redirect('/albums')
   end
   
-  post('/albums/:id/delete') do
+  post('/albums/:id/purchase') do
     id = params[:id].to_i
     db = SQLite3::Database.new("db/musicsite.db")
-    db.execute("DELETE FROM albums WHERE AlbumId = ?",id)
-    redirect('/albums')
+    UserId = session[:result]["Userid"]
+    wallet = session[:result]["Wallet"]
+    price = db.execute("SELECT * FROM albums WHERE AlbumId = ?",id).first[3].to_i
+  
+    
+    # Här kollar koden ifall användaren redan äger albumet han försöker köpa
+
+    results = db.execute("SELECT * FROM user_album_rel")
+    match_found = false
+    results.each do |row|
+      row_userid = row[0] 
+      row_albumid = row[1]
+      if row_userid == UserId && row_albumid == id
+        redirect('/response3')
+      end
+    end
+
+
+
+
+    # Här kollar koden ifall användaren har råd att köpa albumet och samt "köper" albumet ifall pengarna räcker till
+    # Albumet och UserId läggs till i user_album_rel ifall pengarna räcker till
+
+    if price < wallet
+      p UserId
+      p id 
+      p "____________________________________"
+      session[:result]["Wallet"] -= price
+      db.execute("INSERT INTO user_album_rel (UserId, AlbumId) VALUES (?,?)",UserId, id)
+      redirect('/response1')
+    else 
+      p "not enough funds"
+      redirect('/response2')
+    end
+
+
+
+    redirect('/store')
   end
   
   post('/albums/:id/update') do
