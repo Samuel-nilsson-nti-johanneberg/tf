@@ -117,15 +117,6 @@ require 'bcrypt'
 
   end
 
-  # post('/store/:id/buy') do
-  #   id = params[:id].to_i
-  #   db = SQLite3::Database.new("db/musicsite.db")
-  #   wallet = session[:result]["Wallet"]
-    
-  #   # db.execute("DELETE FROM albums WHERE AlbumId = ?",id)
-  #   redirect('/albums')
-  # end
-
   get('/response1') do
     slim(:"albums/response1")
   end
@@ -162,11 +153,22 @@ require 'bcrypt'
   end
 
   post('/albums/:id/refund') do
+    id = params[:id].to_i
     db = SQLite3::Database.new("db/musicsite.db")
     rel_result = db.execute("SELECT * FROM user_album_rel")
+    price = db.execute("SELECT * FROM albums WHERE AlbumId = ?",id).first[3].to_i
+    p price
+    price = (price/2).to_i
+    p price
+    p "____________"
     UserId = session[:result]["Userid"]
-    id = params[:id].to_i
     db.execute("DELETE FROM user_album_rel WHERE AlbumId = ? AND UserId = ?",id,UserId)
+    wallet = session[:result]["wallet"].to_i
+
+
+    wallet += price
+    db.execute("UPDATE users SET Wallet = #{wallet} WHERE Userid = #{UserId}")
+    session[:result]["Wallet"] = wallet
 
     redirect('/response4')
   end
