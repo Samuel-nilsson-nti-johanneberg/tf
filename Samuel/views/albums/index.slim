@@ -1,12 +1,15 @@
 h1 All Albums
 
+/ p #{result}
+
+
 
 ol
   - albums.each do |album|
     li 
       a href="albums/#{album['AlbumId']}" #{album["Title"]}
       a href="albums/#{album['AlbumId']}/edit" Uppdatera
-      form method="POST" action="albums/#{album['AlbumId']}/delete"
-        input type="submit" value="Delete"
+      form method="POST" action="albums/#{album['AlbumId']}/refund"
+        input type="submit" value="Refund"
        
             
