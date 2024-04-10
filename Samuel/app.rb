@@ -141,8 +141,22 @@ require 'bcrypt'
   get('/albums') do
     db = SQLite3::Database.new("db/musicsite.db")
     db.results_as_hash = true
-    result = db.execute("SELECT * FROM albums")
+    albums_result = db.execute("SELECT * FROM albums")
+    user_results = db.execute("SELECT * FROM user_album_rel")
     slim(:"albums/index",locals:{albums:result})
+
+
+
+
+
+    # match_found = false
+    # results.each do |row|
+    #   row_userid = row[0] 
+    #   row_albumid = row[1]
+    #   if row_userid == UserId && row_albumid == id
+    #     redirect('/response3')
+    #   end
+    # end
   end
   
   get('/albums/new') do
@@ -179,17 +193,17 @@ require 'bcrypt'
     end
 
 
-
-
     # Här kollar koden ifall användaren har råd att köpa albumet och samt "köper" albumet ifall pengarna räcker till
     # Albumet och UserId läggs till i user_album_rel ifall pengarna räcker till
 
-    if price < wallet
+    if price <= wallet
       p UserId
       p id 
       p "____________________________________"
-      session[:result]["Wallet"] -= price
       db.execute("INSERT INTO user_album_rel (UserId, AlbumId) VALUES (?,?)",UserId, id)
+      wallet -= price
+      db.execute("UPDATE users SET Wallet = #{wallet} WHERE Userid = #{UserId}")
+      session[:result]["Wallet"] = wallet
       redirect('/response1')
     else 
       p "not enough funds"
