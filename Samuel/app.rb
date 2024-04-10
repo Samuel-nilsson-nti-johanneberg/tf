@@ -155,16 +155,15 @@ require 'bcrypt'
   post('/albums/:id/refund') do
     id = params[:id].to_i
     db = SQLite3::Database.new("db/musicsite.db")
-    rel_result = db.execute("SELECT * FROM user_album_rel")
     price = db.execute("SELECT * FROM albums WHERE AlbumId = ?",id).first[3].to_i
     price = (price/2).to_i
     UserId = session[:result]["Userid"]
 
     db.execute("DELETE FROM user_album_rel WHERE AlbumId = ? AND UserId = ?",id,UserId)
-    wallet = session[:result]["wallet"].to_i
-    wallet += price
+ 
+    session[:result]["Wallet"] += price
+    wallet = session[:result]["Wallet"]
     db.execute("UPDATE users SET Wallet = #{wallet} WHERE Userid = #{UserId}")
-    session[:result]["Wallet"] = wallet
 
     redirect('/response4')
   end
@@ -193,7 +192,6 @@ require 'bcrypt'
     # Här kollar koden ifall användaren redan äger albumet han försöker köpa
 
     results = db.execute("SELECT * FROM user_album_rel")
-    match_found = false
     results.each do |row|
       row_userid = row[0] 
       row_albumid = row[1]
@@ -215,8 +213,6 @@ require 'bcrypt'
     else 
       redirect('/response2')
     end
-
-
 
     redirect('/store')
   end
