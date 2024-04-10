@@ -51,10 +51,7 @@ require 'bcrypt'
     else
       slim(:"/users/login")
     end
-    
   end
-
-
 
   post('/wallet/add100') do
     session[:result]["Wallet"] += 100
@@ -62,21 +59,25 @@ require 'bcrypt'
     wallet = session[:result]["Wallet"]
     userid = session[:result]["Userid"]
     db = SQLite3::Database.new("db/musicsite.db")
-
-    # db.execute("UPDATE users SET Wallet = ? WHERE Userid = ?",wallet,userid)
     db.execute("UPDATE users SET Wallet = #{wallet} WHERE Userid = #{userid}")
-  
-
     redirect('/wallet')
   end
 
   post('/wallet/add500') do
     session[:result]["Wallet"] += 500
+    wallet = session[:result]["Wallet"]
+    userid = session[:result]["Userid"]
+    db = SQLite3::Database.new("db/musicsite.db")
+    db.execute("UPDATE users SET Wallet = #{wallet} WHERE Userid = #{userid}")
     redirect('/wallet')
   end
 
   post('/wallet/add1000') do
     session[:result]["Wallet"] += 1000
+    wallet = session[:result]["Wallet"]
+    userid = session[:result]["Userid"]
+    db = SQLite3::Database.new("db/musicsite.db")
+    db.execute("UPDATE users SET Wallet = #{wallet} WHERE Userid = #{userid}")
     redirect('/wallet')
   end
 
@@ -114,7 +115,6 @@ require 'bcrypt'
     db.results_as_hash = true
     result = db.execute("SELECT * FROM albums")
     slim(:"albums/store",locals:{albums:result})
-
   end
 
   get('/response1') do
@@ -157,15 +157,11 @@ require 'bcrypt'
     db = SQLite3::Database.new("db/musicsite.db")
     rel_result = db.execute("SELECT * FROM user_album_rel")
     price = db.execute("SELECT * FROM albums WHERE AlbumId = ?",id).first[3].to_i
-    p price
     price = (price/2).to_i
-    p price
-    p "____________"
     UserId = session[:result]["Userid"]
+
     db.execute("DELETE FROM user_album_rel WHERE AlbumId = ? AND UserId = ?",id,UserId)
     wallet = session[:result]["wallet"].to_i
-
-
     wallet += price
     db.execute("UPDATE users SET Wallet = #{wallet} WHERE Userid = #{UserId}")
     session[:result]["Wallet"] = wallet
