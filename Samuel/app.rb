@@ -25,13 +25,12 @@ require 'bcrypt'
   end
 
   get('/response10') do
-    slim(:"/users/response10")
+    slim(:"/responses/response10")
   end
 
   get('/response11') do
-    slim(:"/users/response11")
+    slim(:"/responses/response11")
   end
-  
   
   
   post('/login') do
@@ -131,19 +130,19 @@ require 'bcrypt'
   end
 
   get('/response1') do
-    slim(:"albums/response1")
+    slim(:"responses/response1")
   end
 
   get('/response2') do
-    slim(:"albums/response2")
+    slim(:"responses/response2")
   end
 
   get('/response3') do
-    slim(:"albums/response3")
+    slim(:"responses/response3")
   end
 
   get('/response4') do
-    slim(:"albums/response4")
+    slim(:"responses/response4")
   end
 
   get('/albums') do
