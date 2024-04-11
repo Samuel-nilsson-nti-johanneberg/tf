@@ -9,7 +9,11 @@ require 'bcrypt'
   
 
   get('/')  do
-    slim(:start)
+    if session[:id] != nil
+      slim(:"/start2")
+    else
+      slim(:"/start")
+    end
   end
 
   get('/register') do
@@ -20,11 +24,14 @@ require 'bcrypt'
     slim(:"/users/login")
   end
 
-  
-
-  get('/blackjack') do
-    slim(:"/blackjack/blackjack")
+  get('/response10') do
+    slim(:"/users/response10")
   end
+
+  get('/response11') do
+    slim(:"/users/response11")
+  end
+  
   
   
   post('/login') do
@@ -33,16 +40,22 @@ require 'bcrypt'
     db = SQLite3::Database.new("db/musicsite.db")
     db.results_as_hash = true
     result = db.execute("SELECT * FROM users WHERE username = ?",username).first
-    pwdigest = result["Pwdigest"]
-    id = result["Userid"]
-    
-    if BCrypt::Password.new(pwdigest) == password
-      session[:id] = id
-      session[:result] = result
-      redirect('/albums')
-    else
-      "Fel lösenord!"
+
+    if result != nil
+      pwdigest = result["Pwdigest"]
+      id = result["Userid"]
+      if BCrypt::Password.new(pwdigest) == password
+        session[:id] = id
+        session[:result] = result
+        redirect('/')
+      else
+        redirect('/response10')
+      end
+    else 
+      redirect('/response11')
     end
+    
+
   end
 
   get('/wallet') do
