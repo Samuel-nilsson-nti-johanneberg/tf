@@ -94,15 +94,6 @@ require 'bcrypt'
   end
 
   
-  # get('/todos') do
-  #   id = session[:id].to_i
-  #   db = SQLite3::Database.new("db/musicsite.db")
-  #   db.results_as_hash = true
-  #   result = db.execute("SELECT * FROM todos WHERE user_id = ?",id)
-  #   p "Alla todos från result #{result}"
-  #   slim(:"todos/index",locals:{todos:result})
-  # end
-  
   post('/users/new') do
     username = params[:username]
     password = params[:password]
@@ -117,7 +108,7 @@ require 'bcrypt'
       db.execute("INSERT INTO users (Username, Pwdigest, Firstname, Lastname, Email) VALUES (?,?,?,?,?)",username,password_digest,firstname,lastname,email)
       redirect('/')
     else
-      "Lösenorden matchar inte!"
+      "Passwords does not match!"
     end
   end
 
