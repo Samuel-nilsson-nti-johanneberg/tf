@@ -5,7 +5,7 @@ ol
   - albums.each do |album|
     li 
       a href="albums/#{album['AlbumId']}" #{album["Title"]}
-      a href="albums/#{album['AlbumId']}/edit" Uppdatera
+      / a href="albums/#{album['AlbumId']}/edit" Uppdatera
       form method="POST" action="albums/#{album['AlbumId']}/purchase"
         input type="submit" value="purchase"
        
