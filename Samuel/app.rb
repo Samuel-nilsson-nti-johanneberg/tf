@@ -65,31 +65,29 @@ require 'bcrypt'
     end
   end
 
-  post('/wallet/add100') do
-    session[:result]["Wallet"] += 100
-
+  def save_wallet() 
     wallet = session[:result]["Wallet"]
     userid = session[:result]["Userid"]
     db = SQLite3::Database.new("db/musicsite.db")
     db.execute("UPDATE users SET Wallet = #{wallet} WHERE Userid = #{userid}")
+  end
+
+
+  post('/wallet/add100') do
+    session[:result]["Wallet"] += 100
+    save_wallet()
     redirect('/wallet')
   end
 
   post('/wallet/add500') do
     session[:result]["Wallet"] += 500
-    wallet = session[:result]["Wallet"]
-    userid = session[:result]["Userid"]
-    db = SQLite3::Database.new("db/musicsite.db")
-    db.execute("UPDATE users SET Wallet = #{wallet} WHERE Userid = #{userid}")
+    save_wallet()
     redirect('/wallet')
   end
 
   post('/wallet/add1000') do
     session[:result]["Wallet"] += 1000
-    wallet = session[:result]["Wallet"]
-    userid = session[:result]["Userid"]
-    db = SQLite3::Database.new("db/musicsite.db")
-    db.execute("UPDATE users SET Wallet = #{wallet} WHERE Userid = #{userid}")
+    save_wallet()
     redirect('/wallet')
   end
 
