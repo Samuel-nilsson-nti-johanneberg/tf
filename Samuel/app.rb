@@ -3,7 +3,8 @@ require 'sinatra'
 require 'sinatra/reloader'
 require 'sqlite3'
 require 'bcrypt'
-
+# require_relative '/model.rb'
+# require_relative '/view.rb'
 
   enable :sessions
   
@@ -93,16 +94,40 @@ require 'bcrypt'
 
   
   post('/users/new') do
+    db = SQLite3::Database.new("db/musicsite.db")
     username = params[:username]
     password = params[:password]
     password_confirm = params[:password_confirm]
     firstname = params[:firstname]
     lastname = params[:lastname]
     email = params[:email]
+
+    p "___________________________________________________"
+    p username.length
+    # p username.contains?("å","ä","ö")
+    # p username.is_i?
+    # p username.is_f?
+    if username.length < 7
+      p "Användarnamet ska vara minst 8 tecken"
+    # elsif username.contains?("å","ä","ö")
+    #   "Användarnamnet får inte innehålla å, ä eller ö."
+    # elsif username.is_i? || username.is_f?
+    #   "Anvädarnamet måste innehålla minst en bokstav"
+
+    end
+  
+    results = db.execute("SELECT Username FROM users")
+    results.each do |current_username|
+      if username == current_username[0]
+        p "Användarnamnet finns redan"
+        # redirect('/response3')
+      end
+    end
+
+
   
     if (password == password_confirm)
       password_digest = BCrypt::Password.create(password)
-      db = SQLite3::Database.new("db/musicsite.db")
       db.execute("INSERT INTO users (Username, Pwdigest, Firstname, Lastname, Email) VALUES (?,?,?,?,?)",username,password_digest,firstname,lastname,email)
       redirect('/')
     else
