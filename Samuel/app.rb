@@ -92,6 +92,25 @@ require 'bcrypt'
     redirect('/wallet')
   end
 
+  get('/response20') do
+    slim(:"responses/response20")
+  end
+
+  get('/response21') do
+    slim(:"responses/response21")
+  end
+
+  get('/response22') do
+    slim(:"responses/response22")
+  end
+
+  get('/response23') do
+    slim(:"responses/response23")
+  end
+
+  get('/response24') do
+    slim(:"responses/response24")
+  end
   
   post('/users/new') do
     db = SQLite3::Database.new("db/musicsite.db")
@@ -102,36 +121,36 @@ require 'bcrypt'
     lastname = params[:lastname]
     email = params[:email]
 
-    p "___________________________________________________"
-    p username.length
-    # p username.contains?("å","ä","ö")
-    # p username.is_i?
-    # p username.is_f?
-    if username.length < 7
-      p "Användarnamet ska vara minst 8 tecken"
-    # elsif username.contains?("å","ä","ö")
-    #   "Användarnamnet får inte innehålla å, ä eller ö."
-    # elsif username.is_i? || username.is_f?
-    #   "Anvädarnamet måste innehålla minst en bokstav"
-
-    end
-  
-    results = db.execute("SELECT Username FROM users")
-    results.each do |current_username|
-      if username == current_username[0]
-        p "Användarnamnet finns redan"
-        # redirect('/response3')
+    if username.length < 5 || username == nil
+      p "Användarnamet ska vara minst 6 tecken"
+      redirect('/response20')
+    else
+      results = db.execute("SELECT Username FROM users")
+      results.each do |current_username|
+        if username == current_username[0]
+          p "Användarnamnet finns redan"
+          redirect('/response21')
+        end
       end
     end
 
+    if email.include?("@") == false || email.include?(".") == false
+      redirect('/response22')
+    else
+      results = db.execute("SELECT Email FROM users")
+      results.each do |current_email|
+        if email == current_email[0]
+          redirect('/response23')
+        end
+      end
+    end
 
-  
     if (password == password_confirm)
       password_digest = BCrypt::Password.create(password)
       db.execute("INSERT INTO users (Username, Pwdigest, Firstname, Lastname, Email) VALUES (?,?,?,?,?)",username,password_digest,firstname,lastname,email)
       redirect('/')
     else
-      "Passwords does not match!"
+      redirect('/response24')
     end
   end
 
