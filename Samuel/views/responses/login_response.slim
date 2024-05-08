@@ -1,0 +1,9 @@
+- if response_code == 10
+  h2 Login failed
+  h3 You entered the wrong password
+  == slim :"responses/response_partial2"
+
+- if response_code == 11
+  h2 Login failed
+  h3 The username you entered does not exist
+  == slim :"responses/response_partial2"

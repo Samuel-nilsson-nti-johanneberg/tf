@@ -1,0 +1,20 @@
+- if @response_code == 1
+  h2 Purchase successful
+  h3 Recipe: .... coming soon
+  == slim :"responses/response_partial"
+
+- if @response_code == 2
+  h2 Purchase failed 
+  h3 Not enough funds on your account 
+  p Press here to add funds
+  a href="/wallet" Add funds
+
+- if @response_code == 3
+  h2 Purchase failed 
+  h3 You already own this album 
+  == slim :"responses/response_partial"
+
+- if @response_code == 4
+  h2 Refund successful 
+  p You refunded the album and got 50% of the price refunded to your wallet
+  == slim :"responses/response_partial"

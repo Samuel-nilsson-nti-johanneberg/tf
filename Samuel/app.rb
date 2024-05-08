@@ -5,6 +5,11 @@ require_relative './model.rb'
 
 enable :sessions
 
+before do
+    @db = SQLite3::Database.new("db/musicsite.db")
+    @db.results_as_hash = true
+end
+
 get('/') do
     if session[:id] != nil
     
@@ -41,19 +46,25 @@ post('/login') do
     result = login(username)
 
     if result != nil
-        pwdigest = result["Pwdigest"]
-        id = result["Userid"]
-        if BCrypt::Password.new(pwdigest) == password
+    pwdigest = result["Pwdigest"]
+    id = result["Userid"]
+    if BCrypt::Password.new(pwdigest) == password
         session[:id] = id
         session[:result] = result
-        
         redirect('/')
-        else
-        redirect('/response10')
-        end
-    else 
-        redirect('/response11')
+    else
+        session[:response_code] = 10
+        redirect('/login_response')
     end
+    else 
+    session[:response_code] = 11
+    redirect('/login_response')
+    end
+end
+
+get('/login_response') do
+    @response_code = session.delete(:response_code)
+    slim(:"responses/login_response",locals:{response_code:@response_code})
 end
 
 get('/wallet') do
@@ -110,36 +121,43 @@ post('/users/new') do
     lastname = params[:lastname]
     email = params[:email]
 
-    if username.length < 5 || username == nil
-        p "Användarnamet ska vara minst 6 tecken"
-        redirect('/response20')
+    if username.length < 5 || username.nil?
+        session[:response_code] = 20
+        redirect('/registration_response')
     else
         if !check_username(username)
-        p "Användarnamnet finns redan"
-        redirect('/response21')
+        session[:response_code] = 21
+        redirect('/registration_response')
         end
     end
 
-    if email.include?("@") == false || email.include?(".") == false
-        redirect('/response22')
+    if !email.include?("@") || !email.include?(".")
+        session[:response_code] = 22
+        redirect('/registration_response')
     else
         if !check_email(email)
-        redirect('/response23')
+        session[:response_code] = 23
+        redirect('/registration_response')
         end
     end
 
-    if (password == password_confirm)
-        register_user(username, password, firstname, lastname, email)
-        redirect('/')
-    else
-        redirect('/response24')
+    if password != password_confirm
+        session[:response_code] = 24
+        redirect('/registration_response')
     end
+
+    register_user(username, password, firstname, lastname, email)
+    redirect('/')
 end
+  
+get('/registration_response') do
+    @response_code = session.delete(:response_code)
+    slim(:"responses/registration_response",locals:{response_code:@response_code})
+end
+  
 
 get('/store') do
-    db = SQLite3::Database.new("db/musicsite.db")
-    db.results_as_hash = true
-    result = db.execute("SELECT * FROM albums")
+    result = @db.execute("SELECT * FROM albums")
     # if check_admin(session[:id])
     #     slim(:"albums_admin/store",locals:{albums:result})
     # end
@@ -164,10 +182,9 @@ get('/response4') do
 end
 
 get('/albums') do
-    db = SQLite3::Database.new("db/musicsite.db")
-    db.results_as_hash = true
-    albums_result = db.execute("SELECT * FROM albums")
-    rel_result = db.execute("SELECT * FROM user_album_rel")
+    
+    albums_result = @db.execute("SELECT * FROM albums")
+    rel_result = @db.execute("SELECT * FROM user_album_rel")
     UserId = session[:result]["Userid"]
     
     result = []
@@ -187,17 +204,23 @@ post('/albums/:id/purchase') do
     session_result = session[:result]
 
     response = purchase_album(id, session_result)
-    p "______________"
-    p response
+    
     if response == "response1"
-        redirect('/response1')
+        session[:response_code] = 1
+        redirect('/wallet_response')
     elsif response == "response2"
-        redirect('/response2')
+        session[:response_code] = 2
+        redirect('/wallet_response')
     elsif response == "response3"
-        redirect('/response3')
+        session[:response_code] = 3
+        redirect('/wallet_response')
     end
+end
 
-  end
+get('/wallet_response') do
+    @response_code = session.delete(:response_code)
+    slim(:"responses/wallet_response",locals:{response_code:@response_code})
+end
   
 
 post('/albums/:id/refund') do

@@ -1,0 +1,25 @@
+- if response_code == 20
+  h2 Registration failed
+  h3 The username must contain at least 8 characters
+  == slim :"responses/response_partial2"
+
+- if response_code == 21
+  h2 Registration failed
+  h3 The username you entered is already in use
+  == slim :"responses/response_partial2"
+
+- if response_code == 22
+  h2 Registration failed
+  h3 Enter a real email
+  == slim :"responses/response_partial2"
+
+- if response_code == 23
+  h2 Registration failed
+  h3 The email you entered is already in use
+  == slim :"responses/response_partial2"
+
+- if response_code == 24
+  h2 Registration failed
+  h3 The passwords does not match
+  == slim :"responses/response_partial2"
+
