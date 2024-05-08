@@ -1,118 +1,102 @@
 require 'slim'
 require 'sinatra'
 require 'sinatra/reloader'
-require 'sqlite3'
-require 'bcrypt'
 require_relative './model.rb'
 
-  enable :sessions
-  
+enable :sessions
 
-  get('/')  do
+get('/') do
     if session[:id] != nil
-      slim(:"/start2")
+        slim(:"/start2")
     else
-      slim(:"/start")
+        slim(:"/start")
     end
-  end
+end
 
-  get('/register') do
+get('/register') do
     slim(:"/users/register")
-  end
+end
 
-  get('/showlogin') do
+get('/showlogin') do
     slim(:"/users/login")
-  end
+end
 
-  get('/response10') do
+get('/response10') do
     slim(:"/responses/response10")
-  end
+end
 
-  get('/response11') do
+get('/response11') do
     slim(:"/responses/response11")
-  end
-  
-  
-  post('/login') do
+end
+
+
+post('/login') do
     username = params[:username]
     password = params[:password]
-    db = SQLite3::Database.new("db/musicsite.db")
-    db.results_as_hash = true
-    result = db.execute("SELECT * FROM users WHERE username = ?",username).first
+    result = login(username)
 
     if result != nil
-      pwdigest = result["Pwdigest"]
-      id = result["Userid"]
-      if BCrypt::Password.new(pwdigest) == password
+        pwdigest = result["Pwdigest"]
+        id = result["Userid"]
+        if BCrypt::Password.new(pwdigest) == password
         session[:id] = id
         session[:result] = result
         redirect('/')
-      else
+        else
         redirect('/response10')
-      end
+        end
     else 
-      redirect('/response11')
+        redirect('/response11')
     end
-    
+end
 
-  end
-
-  get('/wallet') do
+get('/wallet') do
     if session[:id] != nil
-      slim(:"/users/wallet")
+        slim(:"/users/wallet")
     else
-      slim(:"/users/login")
+        slim(:"/users/login")
     end
-  end
+end
 
-  def save_wallet() 
-    wallet = session[:result]["Wallet"]
-    userid = session[:result]["Userid"]
-    db = SQLite3::Database.new("db/musicsite.db")
-    db.execute("UPDATE users SET Wallet = #{wallet} WHERE Userid = #{userid}")
-  end
-
-
-  post('/wallet/add100') do
+post('/wallet/add100') do
     session[:result]["Wallet"] += 100
-    save_wallet()
+    save_wallet(session[:result])
     redirect('/wallet')
-  end
+end
 
-  post('/wallet/add500') do
+post('/wallet/add500') do
     session[:result]["Wallet"] += 500
-    save_wallet()
+    save_wallet(session[:result])
     redirect('/wallet')
-  end
+end
 
-  post('/wallet/add1000') do
+post('/wallet/add1000') do
     session[:result]["Wallet"] += 1000
-    save_wallet()
+    save_wallet(session[:result])
     redirect('/wallet')
-  end
+end
 
-  get('/response20') do
+get('/response20') do
     slim(:"responses/response20")
-  end
+end
 
-  get('/response21') do
+get('/response21') do
     slim(:"responses/response21")
-  end
+end
 
-  get('/response22') do
+get('/response22') do
     slim(:"responses/response22")
-  end
+end
 
-  get('/response23') do
+get('/response23') do
     slim(:"responses/response23")
-  end
+end
 
-  get('/response24') do
+get('/response24') do
     slim(:"responses/response24")
-  end
-  
-  post('/users/new') do
-    db = SQLite3::Database.new("db/musicsite.db")
+end
+
+post('/users/new') do
     username = params[:username]
     password = params[:password]
     password_confirm = params[:password_confirm]
@@ -121,63 +105,55 @@ require_relative './model.rb'
     email = params[:email]
 
     if username.length < 5 || username == nil
-      p "Användarnamet ska vara minst 6 tecken"
-      redirect('/response20')
+        p "Användarnamet ska vara minst 6 tecken"
+        redirect('/response20')
     else
-      results = db.execute("SELECT Username FROM users")
-      results.each do |current_username|
-        if username == current_username[0]
-          p "Användarnamnet finns redan"
-          redirect('/response21')
+        if !check_username(username)
+        p "Användarnamnet finns redan"
+        redirect('/response21')
         end
-      end
     end
 
     if email.include?("@") == false || email.include?(".") == false
-      redirect('/response22')
+        redirect('/response22')
     else
-      results = db.execute("SELECT Email FROM users")
-      results.each do |current_email|
-        if email == current_email[0]
-          redirect('/response23')
+        if !check_email(email)
+        redirect('/response23')
         end
-      end
     end
 
     if (password == password_confirm)
-      password_digest = BCrypt::Password.create(password)
-      db.execute("INSERT INTO users (Username, Pwdigest, Firstname, Lastname, Email) VALUES (?,?,?,?,?)",username,password_digest,firstname,lastname,email)
-      redirect('/')
+        register_user(username, password, firstname, lastname, email)
+        redirect('/')
     else
-      redirect('/response24')
+        redirect('/response24')
     end
-  end
+end
 
-
-  get('/store') do
+get('/store') do
     db = SQLite3::Database.new("db/musicsite.db")
     db.results_as_hash = true
     result = db.execute("SELECT * FROM albums")
     slim(:"albums/store",locals:{albums:result})
-  end
+end
 
-  get('/response1') do
+get('/response1') do
     slim(:"responses/response1")
-  end
+end
 
-  get('/response2') do
+get('/response2') do
     slim(:"responses/response2")
-  end
+end
 
-  get('/response3') do
+get('/response3') do
     slim(:"responses/response3")
-  end
+end
 
-  get('/response4') do
+get('/response4') do
     slim(:"responses/response4")
-  end
+end
 
-  get('/albums') do
+get('/albums') do
     db = SQLite3::Database.new("db/musicsite.db")
     db.results_as_hash = true
     albums_result = db.execute("SELECT * FROM albums")
@@ -186,107 +162,38 @@ require_relative './model.rb'
     
     result = []
     rel_result.each do |row|
-      row_userid = row[0] 
-      row_albumid = row[1]
-      if row_userid == UserId
-        result << albums_result[row_albumid-1]
-      end
-    end
-  
-    slim(:"albums/index",locals:{albums:result})
+        row_userid = row[0] 
+        row_albumid = row[1]
+        if row_userid == UserId
+            result << albums_result[row_albumid-1]
+        end
   end
 
-  post('/albums/:id/refund') do
+  slim(:"albums/index",locals:{albums:result})
+end
+
+post('/albums/:id/purchase') do
     id = params[:id].to_i
-    db = SQLite3::Database.new("db/musicsite.db")
-    price = db.execute("SELECT * FROM albums WHERE AlbumId = ?",id).first[3].to_i
-    price = (price/2).to_i
-    UserId = session[:result]["Userid"]
+    session_result = session[:result]
 
-    db.execute("DELETE FROM user_album_rel WHERE AlbumId = ? AND UserId = ?",id,UserId)
- 
-    session[:result]["Wallet"] += price
-    wallet = session[:result]["Wallet"]
-    db.execute("UPDATE users SET Wallet = #{wallet} WHERE Userid = #{UserId}")
-
-    redirect('/response4')
-  end
-  
-  get('/albums/new') do
-    slim(:"albums/new")
-  end
-  
-  post('/albums/new') do
-    title = params[:title]
-    artist_id = params[:artist_id].to_i
-    p "vi fick datan #{title} och #{artist_id}"
-    db = SQLite3::Database.new("db/musicsite.db")
-    db.execute("INSERT INTO albums (Title, ArtistId) VALUES (?,?)",title, artist_id)
-    redirect('/albums')
-  end
-  
-  post('/albums/:id/purchase') do
-    id = params[:id].to_i
-    db = SQLite3::Database.new("db/musicsite.db")
-    UserId = session[:result]["Userid"]
-    wallet = session[:result]["Wallet"]
-    price = db.execute("SELECT * FROM albums WHERE AlbumId = ?",id).first[3].to_i
-  
-    
-    # Här kollar koden ifall användaren redan äger albumet han försöker köpa
-
-    results = db.execute("SELECT * FROM user_album_rel")
-    results.each do |row|
-      row_userid = row[0] 
-      row_albumid = row[1]
-      if row_userid == UserId && row_albumid == id
+    response = purchase_album(id, session_result)
+    p "______________"
+    p response
+    if response == "response1"
+        redirect('/response1')
+    elsif response == "response2"
+        redirect('/response2')
+    elsif response == "response3"
         redirect('/response3')
-      end
     end
 
+  end
+  
 
-    # Här kollar koden ifall användaren har råd att köpa albumet och samt "köper" albumet ifall pengarna räcker till
-    # Albumet och UserId läggs till i user_album_rel ifall pengarna räcker till
-
-    if price <= wallet
-      db.execute("INSERT INTO user_album_rel (UserId, AlbumId) VALUES (?,?)",UserId, id)
-      wallet -= price
-      db.execute("UPDATE users SET Wallet = #{wallet} WHERE Userid = #{UserId}")
-      session[:result]["Wallet"] = wallet
-      redirect('/response1')
-    else 
-      redirect('/response2')
-    end
-
-    redirect('/store')
-  end
-  
-  post('/albums/:id/update') do
+post('/albums/:id/refund') do
     id = params[:id].to_i
-    title = params[:title]
-    artist_id = params[:artistId].to_i
-    db = SQLite3::Database.new("db/musicsite.db")
-    db.execute("UPDATE albums SET Title=?,ArtistId=? WHERE AlbumId = ?",title,artist_id,id)
-    redirect('/albums')
-  end
-  
-  get('/albums/:id/edit') do
-    id = params[:id].to_i
-    db = SQLite3::Database.new("db/musicsite.db")
-    db.results_as_hash = true
-    result = db.execute("SELECT * FROM albums WHERE AlbumId = ?",id).first
-    slim(:"/albums/edit",locals:{result:result})
-  end
-  
-  get('/albums/:id') do
-    id = params[:id].to_i
-    db = SQLite3::Database.new("db/musicsite.db")
-    db.results_as_hash = true
-    result = db.execute("SELECT * FROM albums WHERE AlbumId = ?",id).first
-    result2 = db.execute("SELECT Name FROM Artists WHERE ArtistId IN (SELECT ArtistId FROM Albums WHERE AlbumId = ?)",id).first
-    p "Resultat2 är: #{result2}"
-    slim(:"albums/show",locals:{result:result,result2:result2})
-  end
-  
-  
+    session_result = session[:result]
+    refund_album(id, session_result)
+    redirect('/response4')
+end
   
