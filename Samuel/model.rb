@@ -42,6 +42,18 @@ def login(username)
     db.execute("SELECT * FROM users WHERE username = ?", username).first
 end
 
+def check_admin(id)
+    db = connect_to_db
+    db.results_as_hash = true
+    admin = db.execute("SELECT * FROM users WHERE Userid = ?", id).first["Admin"]
+    
+    if admin == 1
+        return true
+    else 
+        return false
+    end
+end
+
 def purchase_album(id, session_result)
     db = connect_to_db
     user_id = session_result["Userid"]

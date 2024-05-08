@@ -7,7 +7,12 @@ enable :sessions
 
 get('/') do
     if session[:id] != nil
-        slim(:"/start2")
+    
+        if check_admin(session[:id])
+            slim(:"/start_admin")
+        else
+            slim(:"/start2")
+        end
     else
         slim(:"/start")
     end
@@ -41,6 +46,7 @@ post('/login') do
         if BCrypt::Password.new(pwdigest) == password
         session[:id] = id
         session[:result] = result
+        
         redirect('/')
         else
         redirect('/response10')
@@ -134,7 +140,11 @@ get('/store') do
     db = SQLite3::Database.new("db/musicsite.db")
     db.results_as_hash = true
     result = db.execute("SELECT * FROM albums")
+    # if check_admin(session[:id])
+    #     slim(:"albums_admin/store",locals:{albums:result})
+    # end
     slim(:"albums/store",locals:{albums:result})
+    
 end
 
 get('/response1') do
@@ -196,4 +206,19 @@ post('/albums/:id/refund') do
     refund_album(id, session_result)
     redirect('/response4')
 end
+
+# get('/store_admin') do
+#     db = SQLite3::Database.new("db/musicsite.db")
+#     db.results_as_hash = true
+#     result = db.execute("SELECT * FROM albums")
+#     slim(:"albums_admin/store",locals:{albums:result})
+# end
   
+# get('/store_admin/:id/edit') do
+#     id = params[:id].to_i
+#     db = SQLite3::Database.new("db/musicsite.db")
+#     db.results_as_hash = true
+#     result = db.execute("SELECT * FROM albums WHERE AlbumId = ?",id).first
+#     slim(:"/albums_admin/edit",locals:{result:result})
+#   end
+
